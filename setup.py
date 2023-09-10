@@ -17,7 +17,6 @@ setup(
         "dev": [
             "black",
             "isort",
-            "mypy",
         ],
         "distribute": [
             "setuptools",
