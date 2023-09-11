@@ -132,3 +132,5 @@ dmypy.json
 venv/
 .venv/
 .pycompgen/
+
+.vscode/
