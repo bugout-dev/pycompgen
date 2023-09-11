@@ -9,16 +9,48 @@ class TestInspectSimple(unittest.TestCase):
         self.parser = argparse.ArgumentParser(
             description="This is a parser to be used in tests"
         )
+        self.parser.add_argument(
+            "-a", "--a", required=True, help="Something something a"
+        )
+        self.parser.add_argument(
+            "-z", "--z", action="store_true", help="Something something z"
+        )
+        self.parser.add_argument(
+            "some-positional-arg", nargs="+", help="Some positional argument"
+        )
 
-        subparsers = self.parser.add_subparsers()
+    def test_possible_completions_by_context(self):
+        completions = possible_completions_by_context(self.parser)
+        self.assertDictEqual(
+            completions,
+            {
+                tuple(): [
+                    "-a",
+                    "--a",
+                    "-h",
+                    "--help",
+                    "-z",
+                    "--z",
+                ],
+            },
+        )
 
-        look_parser = subparsers.add_parser("look", help="Look at something")
-        look_parser.add_argument(
+
+class TestInspectSubcommands(unittest.TestCase):
+    def setUp(self):
+        self.parser = argparse.ArgumentParser(
+            description="This is a parser to be used in tests"
+        )
+
+        self.subparsers = self.parser.add_subparsers()
+
+        self.look_parser = self.subparsers.add_parser("look", help="Look at something")
+        self.look_parser.add_argument(
             "--stare", action="store_true", help="Set this flag to get a good stare in"
         )
 
-        speak_parser = subparsers.add_parser("speak", help="Say something")
-        speak_parser.add_argument("words", nargs="+", help="Words to say")
+        self.speak_parser = self.subparsers.add_parser("speak", help="Say something")
+        self.speak_parser.add_argument("words", nargs="+", help="Words to say")
 
     def test_possible_completions_by_context(self):
         completions = possible_completions_by_context(self.parser)
@@ -31,6 +63,15 @@ class TestInspectSimple(unittest.TestCase):
             },
         )
 
+    def test_possible_completions_by_context_for_subparser(self):
+        completions = possible_completions_by_context(self.look_parser)
+        self.assertDictEqual(
+            completions,
+            {
+                tuple(): ["-h", "--help", "--stare"],
+            },
+        )
+
 
 class TestInspectCommandWithSubcommandAndOptions(unittest.TestCase):
     def setUp(self):
@@ -39,12 +80,12 @@ class TestInspectCommandWithSubcommandAndOptions(unittest.TestCase):
         )
         self.parser.add_argument("-l", help="Something something lll")
 
-        subparsers = self.parser.add_subparsers()
+        self.subparsers = self.parser.add_subparsers()
 
-        subcommand_parser = subparsers.add_parser(
+        self.subcommand_parser = self.subparsers.add_parser(
             "a-subcommand", help="Something something subcommand"
         )
-        subcommand_parser.add_argument(
+        self.subcommand_parser.add_argument(
             "--suboption", required=True, help="Something something suboption"
         )
 
